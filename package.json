@@ -6,7 +6,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "npm ci --prefix smart-village-frontend && npm run build --prefix smart-village-frontend",
+    "build": "npm ci --include=dev --prefix smart-village-frontend && npm run build --prefix smart-village-frontend",
     "test:neon": "npm run test:neon --prefix smart-village-backend"
   },
   "dependencies": {

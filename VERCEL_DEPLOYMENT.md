@@ -33,7 +33,7 @@ Repository: https://github.com/mohitkumar9193/village-digital-twin
 - Framework Preset: Other (root `vercel.json` supplies the build settings).
 - Node.js: 22.x or a compatible supported newer release.
 - Install: `npm ci`.
-- Build: `npm ci --prefix smart-village-frontend && npm run build --prefix smart-village-frontend`.
+- Build: `npm ci --include=dev --prefix smart-village-frontend && npm run build --prefix smart-village-frontend`.
 - Output: `smart-village-frontend/dist`.
 
 If you previously imported only the frontend, change its Root Directory to the repository root and remove `BACKEND_ORIGIN`. Do not import three standalone services. The nested frontend-only config remains available for older separately hosted backends; it is not used by this deployment.

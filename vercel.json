@@ -1,7 +1,7 @@
 {
  "framework":null,
  "installCommand":"npm ci",
- "buildCommand":"npm ci --prefix smart-village-frontend && npm run build --prefix smart-village-frontend",
+ "buildCommand":"npm ci --include=dev --prefix smart-village-frontend && npm run build --prefix smart-village-frontend",
  "outputDirectory":"smart-village-frontend/dist",
  "rewrites":[{"source":"/api/(.*)","destination":"/api/index?__route=$1"},{"source":"/(.*)","destination":"/index.html"}],
  "functions":{"api/index.js":{"maxDuration":60}},
