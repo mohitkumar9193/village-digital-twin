@@ -1,6 +1,7 @@
 export async function api(path, { token, body, method = 'GET', ...options } = {}) {
   const multipart = body instanceof FormData;
   const response = await fetch(`/api/v1${path}`, { credentials: 'include', method, ...options, headers: { ...(body && !multipart ? { 'Content-Type': 'application/json' } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...options.headers }, ...(body ? { body: multipart ? body : JSON.stringify(body) } : {}) });
+  if (response.status !== 204 && !response.headers.get('content-type')?.includes('application/json')) { const error=new Error('API connection unavailable. Check the hosted backend and Vercel BACKEND_ORIGIN setting.'); error.status=response.status; throw error; }
   const result = response.status === 204 ? {} : await response.json().catch(() => ({}));
   if (!response.ok) { const error = new Error(result.error?.fields?.length ? result.error.fields.map(f => `${f.field}: ${f.message}`).join('; ') : result.error?.message || `Request failed (${response.status})`); error.status = response.status; throw error; }
   return result;

@@ -27,3 +27,7 @@ Local settings, database files, uploaded photos and secrets are excluded from Gi
 26 backend API tests passed in an isolated test database. The frontend production build passes. The current local Python service needs its dependency permission issue fixed before live predictions are available. AI training/evaluation uses synthetic data; recommendations require human review. Facilities are sourced map references, not field-verified assets. Response deadlines and notifications do not establish real repairs or government integration.
 
 This repository contains source code; pushing it does not deploy a public website.
+
+## Deploy the frontend on Vercel
+
+See [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md). Import this repository, select root directory `smart-village-frontend`, and set `BACKEND_ORIGIN` to your separately hosted Express HTTPS origin. The config forwards API calls through the frontend origin. The Node backend, MongoDB replica set/Atlas, durable uploads and Python AI service are hosted separately.
