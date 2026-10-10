@@ -2,32 +2,40 @@
 
 A village services portal for Kothri Kalan, Ashta, Sehore, Madhya Pradesh.
 
+## Deploy
+
+Use **one Vercel project + Neon PostgreSQL**. Frontend, Express API, and trained AI inference share the Vercel project. Follow [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md) for database initialization, required secrets, and live testing. Import the repository root, not an individual application folder.
+
 ## Features
 
-- Citizen registration, profiles, complaints and tracking
-- Admin verification, department assignment and review
-- Department progress updates and private repair evidence
+- Citizen registration, profiles, complaints, photos and status tracking
+- Admin verification, department assignment, team management and closure review
+- Department work queues, progress updates and private repair evidence
 - Leaflet/OpenStreetMap GIS with sourced village facilities
-- Notifications, analytics and resolution alarm
+- Notifications, analytics and an opt-in resolution sound
 - Automatic routing after verification, urgent alerts and overdue reminders
-- Python AI priority recommendations trained on synthetic complaint data
+- AI priority recommendations; exported Scikit-learn forest runs inside Node
 
-## Project folders
+## Structure
 
-- `smart-village-frontend`: React/Vite frontend
-- `smart-village-backend`: Node/Express API and MongoDB models
-- `smart-village-ai`: Python model training and FastAPI service
+- `api/index.js`: Vercel serverless Express entry point
+- `smart-village-frontend`: React/Vite UI
+- `smart-village-backend`: API, PostgreSQL adapter, authorization and private image storage
+- `smart-village-ai`: Python training, original model, and Node export script
+- `vercel.json`: root build, API rewrites and daily reminder cron
 
-See each folder's documentation and PORTAL_GUIDE.md for setup. Install Node dependencies with `npm ci` in both Node project folders. Build the frontend using `npm run build`. Python dependencies are listed in the AI requirements.txt. MongoDB transactions require a replica set.
+Neon uses parameterized SQL, JSONB records, unique indexes and serializable transactions. Existing Mongoose schemas remain as validators and ID/date casters; no MongoDB server is needed for the Neon deployment. Legacy local MongoDB mode remains available through Start-Project.ps1. To preserve its saved records, use [NEON_MIGRATION.md](NEON_MIGRATION.md).
 
-Local settings, database files, uploaded photos and secrets are excluded from Git. Never commit real credentials. The local launcher creates development accounts and stores credentials only in ignored backend data/local/settings.json.
+## Verify locally
 
-## Validation and limitations
+```powershell
+npm ci --prefix smart-village-backend
+npm run test:neon --prefix smart-village-backend
+npm ci --prefix smart-village-frontend
+npm run build --prefix smart-village-frontend
+node --test smart-village-frontend/test/deployment.test.js
+```
 
-26 backend API tests passed in an isolated test database. The frontend production build passes. The current local Python service needs its dependency permission issue fixed before live predictions are available. AI training/evaluation uses synthetic data; recommendations require human review. Facilities are sourced map references, not field-verified assets. Response deadlines and notifications do not establish real repairs or government integration.
+Tests use disposable PostgreSQL fixtures, not real citizen data. Vercel mode checks automation on API activity and a daily secured cron rather than a continuous worker. AI is trained/evaluated on synthetic labels. Map facilities are sourced references, not field-verified assets; the configured extent is not an official village boundary. Software cannot perform physical repairs or confirm them automatically.
 
-This repository contains source code; pushing it does not deploy a public website.
-
-## Deploy the frontend on Vercel
-
-See [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md). Import this repository, select root directory `smart-village-frontend`, and set `BACKEND_ORIGIN` to your separately hosted Express HTTPS origin. The config forwards API calls through the frontend origin. The Node backend, MongoDB replica set/Atlas, durable uploads and Python AI service are hosted separately.
+Secrets, local database files, and private uploaded photos are excluded from Git. Pushing this repository does not create a public deployment; Neon and Vercel environment configuration must be completed first.

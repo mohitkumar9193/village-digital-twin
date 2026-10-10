@@ -1,42 +1,79 @@
-# Deploy Smart Village frontend on Vercel
+# Deploy with Vercel + Neon
 
-## Vercel settings
+The default deployment now runs React, Express APIs, and trained AI inference in ONE Vercel project. Neon PostgreSQL stores accounts, complaints, history, notifications, map assets, refresh sessions, recommendations, and private photos. No separate Render backend, MongoDB Atlas, or Python host is required.
 
-1. Import `mohitkumar9193/village-digital-twin`.
-2. Select Root Directory: `smart-village-frontend`.
-3. Framework: Vite. Install: `npm ci`. Build: `npm run build`. Output: `dist`.
-4. Add Production environment variable `BACKEND_ORIGIN`, for example `https://your-backend.onrender.com`. Use your actual deployed backend origin, without `/api/v1`. No localhost address or secrets are permitted here.
-5. Deploy. Missing/invalid BACKEND_ORIGIN produces a clear configuration error instead of a broken login page.
+## 1. Create Neon database
 
-The project uses `vercel.mjs`, a supported programmatic Vercel configuration. API rewrites forward `/api/*` to the Express service while the browser keeps the Vercel origin. Existing JWT access headers, multipart uploads and HttpOnly refresh cookies use this same-origin API route. Keep the default hash navigation (`/#dashboard`, `/#map`, etc.). Static assets are built by Vite; the SPA fallback handles other navigation.
+Create a project at https://console.neon.tech. In Connect, enable connection pooling and copy the PostgreSQL connection string, including `sslmode=require`. Keep it private. Prefer a region close to your Vercel function region.
 
-## Required backend services
+## 2. Initialize your village and Admin
 
-The Vercel frontend cannot start the local launcher, MongoDB, the one-minute worker or Python service. Deploy the Express backend as a persistent service (for example Render), MongoDB Atlas with transactions/replica-set support, and Python FastAPI separately.
+From the repository root, run:
 
-Backend production environment:
+```powershell
+npm ci --prefix smart-village-backend
+Copy-Item .env.example smart-village-backend/.env
+```
 
-- `NODE_ENV=production`
-- `MONGODB_URI`: private Atlas connection string
-- `JWT_SECRET`: private random secret of 32+ characters
-- `VILLAGE_ID`: database village created with backend bootstrap
-- `CORS_ORIGIN`: exact Vercel production origin, e.g. `https://your-project.vercel.app` (no trailing slash)
-- `UPLOAD_DIR`: persistent private storage path mounted on the backend
-- `AI_SERVICE_URL`: hosted Python service URL
-- `AI_SERVICE_KEY`: same private service key on Node and Python
+Edit `smart-village-backend/.env` locally. Set the real `DATABASE_URL`, your `ADMIN_EMAIL`, and a unique `ADMIN_PASSWORD` (12–72 characters). Then:
 
-Set admin/bootstrap values as documented in the backend README. Use `npm ci` and `npm start` on the backend, not `npm run local`. Seed/configure the production village service extent as Kothri Kalan; production does not use your ignored local database automatically. Use durable storage for uploads. Set backend proxy/IP handling for your hosting provider before accepting many public users. Keep secrets out of the frontend and GitHub.
+```powershell
+cd smart-village-backend
+npm run bootstrap:neon
+cd ..
+```
 
-CORS must allow the exact frontend origin. Preview URLs also require explicit backend origin configuration; do not broaden access with a wildcard. Verify forwarded Origin headers and HttpOnly cookie handling on the actual production hosts.
+Copy the printed `VILLAGE_ID`. The command creates Kothri Kalan, sourced map assets, four departments, and your Admin. Re-running for the same Admin leaves credentials unchanged. This creates a fresh installation; see NEON_MIGRATION.md to keep existing MongoDB complaints/photos instead. Never commit `.env`.
 
-## Production verification
+## 3. Import GitHub repository into Vercel
 
-Check backend `/health` and `/ready`; then use the Vercel site for registration/login, refresh after reload, logout, profile, complaint submission/photo upload, map selection, Admin verification, automatic assignment, department evidence, resolution/closure, notifications and analytics. Test the sound with a user click. Verify the worker heartbeat and actual Python predictions. Imported map references do not prove field conditions or repairs.
+Repository: https://github.com/mohitkumar9193/village-digital-twin
 
-## Current status
+- Root Directory: repository root (`.`), **not** `smart-village-frontend`.
+- Framework Preset: Other (root `vercel.json` supplies the build settings).
+- Node.js: 22.x or a compatible supported newer release.
+- Install: `npm ci`.
+- Build: `npm ci --prefix smart-village-frontend && npm run build --prefix smart-village-frontend`.
+- Output: `smart-village-frontend/dist`.
 
-Frontend build and local configuration/API tests pass. This prepares the repository for Vercel; no production URL was created or tested. The local Python AI dependency permission problem is still outstanding. Hosting accounts, actual backend URL, Atlas credentials and service secrets must be configured before the complete system can work online.
+If you previously imported only the frontend, change its Root Directory to the repository root and remove `BACKEND_ORIGIN`. Do not import three standalone services. The nested frontend-only config remains available for older separately hosted backends; it is not used by this deployment.
 
-Official references:
-- https://vercel.com/docs/project-configuration/vercel-ts
-- https://vercel.com/docs/routing/rewrites
+## 4. Set Vercel environment variables
+
+Set these for Production (and Preview only if using a separate test database):
+
+| Variable | Value |
+| --- | --- |
+| DATABASE_URL | Neon **pooled** PostgreSQL URL |
+| JWT_SECRET | A new random secret, at least 32 characters |
+| VILLAGE_ID | ID printed by initialization, or your migrated village ID |
+| CORS_ORIGIN | Exact site origin, e.g. `https://your-project.vercel.app`, no trailing slash |
+| CRON_SECRET | Another random secret, at least 32 characters |
+| NODE_ENV | `production` |
+
+Generate each secret locally with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Do not share secrets in chat or commit them. Do not set `ADMIN_PASSWORD`, `MONGODB_URI`, `AI_SERVICE_URL`, `AI_SERVICE_KEY`, or `BACKEND_ORIGIN` in this deployment.
+
+Deploy. If the final Vercel domain differs, update `CORS_ORIGIN` and redeploy. Frontend requests `/api/v1` on the same domain; no localhost API dependency or frontend API URL is needed.
+
+## 5. Check the live system
+
+1. Visit `/api/health` and `/api/ready`; expect `ok` and `connected`.
+2. Sign in with the Admin created above; create a staff account for each department in team management.
+3. Register a citizen; submit an in-boundary complaint and an optional photo.
+4. Verify it as Admin. Automatic assignment needs exactly one active matching department with active staff; otherwise assign manually.
+5. Staff start work, add remarks and upload repair evidence, then resolve. Admin reviews and closes. Citizen sees timeline, status, photo and notifications; enable the sound control to hear the resolution alarm.
+6. Check GIS and analytics, then refresh AI recommendations from Admin dashboard.
+
+## Scheduling and storage
+
+Vercel functions run on requests. Routing/reminder checks run on authenticated writes and when the resolution status panel polls; a secured daily cron also checks when nobody is visiting. The daily schedule is 02:00 UTC; Hobby timing is approximate. This is not a continuously running 60-second worker. Repairs and closure always require staff evidence and Admin review. See [Vercel cron limits](https://vercel.com/docs/cron-jobs/usage-and-pricing) and [cron authentication](https://vercel.com/docs/cron-jobs/manage-cron-jobs).
+
+Uploads are limited to 4 MB each to fit function request limits, validated/reencoded to JPEG, stored in Neon `bytea`, and downloaded only after complaint authorization. Photos consume database storage; monitor Neon quotas. For substantial production image volume, migrate image blobs to private object storage. GIS GeoJSON is stored in JSONB and intersections run with Turf after village/role filtering; this is suitable for the current village-sized dataset, not a PostGIS installation.
+
+The AI forest is exported from the existing Scikit-learn model and executes in Node. All 480 held-out priorities and class scores match Python. Its labels/data remain synthetic and recommendations require human review. Retrain with Python and run `python export-node.py` in `smart-village-ai`, then redeploy.
+
+## Verification completed locally
+
+PostgreSQL tests use an isolated PGlite PostgreSQL engine (not your live database), including the full complaint/evidence/closure workflow, privacy, roles, GIS, analytics, sessions, concurrency, and Vercel route/cron entry point. Production build and browser API tests pass. No live Neon connection or deployed Vercel system has been verified yet; finish the live checklist after adding your credentials.
+
+Connection details: [Neon connection pooling](https://neon.com/docs/connect/connection-pooling).

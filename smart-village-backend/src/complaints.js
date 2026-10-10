@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
-import mongoose from 'mongoose';
+import mongoose from './database.js';
 import { z } from 'zod';
 import { Complaint, ComplaintEvent, Notification, Department, User, Asset, Attachment, Village, Area } from './models.js';
 import { ApiError, allow, validate, id, categories, priorities, pointInput, paging, sendList, scope } from './common.js';

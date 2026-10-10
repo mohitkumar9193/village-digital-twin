@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import mongoose from 'mongoose';
+import mongoose from './database.js';
 import { z } from 'zod';
 import { Complaint, Asset } from './models.js';
 import { allow, ApiError } from './common.js';
+import {modelMetadata,predictPriority} from './local-ai.js';
 
 const resultSchema = z.object({ suggested_priority:z.enum(['low','medium','high','critical']), attention_level:z.enum(['low','medium','high','critical']), model_version:z.string().max(100), synthetic:z.boolean(), class_scores:z.record(z.string(),z.number().min(0).max(1)), reasons:z.array(z.string().max(500)).max(20), recommendations:z.array(z.string().max(500)).max(20), warnings:z.array(z.string().max(500)).max(20), features:z.record(z.string(),z.union([z.string(),z.number()])) });
 const schema = new mongoose.Schema({villageId:{type:mongoose.Schema.Types.ObjectId,required:true},complaintId:{type:mongoose.Schema.Types.ObjectId,required:true},result:mongoose.Schema.Types.Mixed,sourceVersion:Number,generatedAt:Date},{timestamps:true});
@@ -10,6 +11,7 @@ schema.index({villageId:1,complaintId:1},{unique:true});
 export const AiRecommendation = mongoose.model('AiRecommendation',schema);
 
 export async function callAi(config,path,body) {
+  if(config.LOCAL_AI)return path==='/model'?modelMetadata:predictPriority(body);
   if (!config.AI_SERVICE_URL || !config.AI_SERVICE_KEY) throw new ApiError(503,'AI_UNAVAILABLE','AI service is not configured');
   try {
     const response=await fetch(`${config.AI_SERVICE_URL}${path}`,{method:body?'POST':'GET',headers:{'Content-Type':'application/json','X-AI-Key':config.AI_SERVICE_KEY},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(8000)});

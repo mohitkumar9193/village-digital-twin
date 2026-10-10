@@ -3,7 +3,7 @@ import { rateLimit } from 'express-rate-limit';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { randomBytes, createHash, timingSafeEqual } from 'node:crypto';
-import mongoose from 'mongoose';
+import mongoose from './database.js';
 import { z } from 'zod';
 import { User, Session, Village, Department } from './models.js';
 import { ApiError, validate } from './common.js';
@@ -76,7 +76,7 @@ export function authRouter(config, authenticate) {
   router.get('/me', authenticate, (req, res) => res.json({ data: publicUser(req.user) }));
   router.patch('/me', authenticate, async (req, res) => {
     const body = validate(z.object({ name: z.string().trim().min(2).max(100) }).strict(), req.body);
-    req.user.name = body.name; await req.user.save(); res.json({ data: publicUser(req.user) });
+    const user=await User.findByIdAndUpdate(req.user._id,{$set:{name:body.name}},{new:true,runValidators:true});res.json({data:publicUser(user)});
   });
   router.post('/logout', authenticate, async (req, res) => {
     await Session.updateOne({ _id: req.authSession._id }, { $set: { revokedAt: new Date() } });
@@ -91,7 +91,7 @@ export function authRouter(config, authenticate) {
     const user = await User.findById(req.user._id).select('+passwordHash');
     if (!await bcrypt.compare(body.currentPassword, user.passwordHash)) throw new ApiError(401, 'INVALID_CREDENTIALS', 'Current password is incorrect');
     await mongoose.connection.transaction(async session => {
-      user.passwordHash = await bcrypt.hash(body.newPassword, 12); await user.save({ session });
+      await User.updateOne({_id:user._id},{$set:{passwordHash:await bcrypt.hash(body.newPassword,12)}},{session});
       await Session.updateMany({ userId: user._id, revokedAt: null }, { $set: { revokedAt: new Date() } }, { session });
     });
     res.clearCookie(cookieName, { ...cookieOptions(config), maxAge: undefined }); res.status(204).end();

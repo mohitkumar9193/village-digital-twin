@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import mongoose from 'mongoose';
+import mongoose from './database.js';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { Asset, Department, User, AuditLog, Village } from './models.js';

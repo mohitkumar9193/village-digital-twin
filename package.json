@@ -1,0 +1,28 @@
+{
+  "name": "smart-village-neon",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "npm ci --prefix smart-village-frontend && npm run build --prefix smart-village-frontend",
+    "test:neon": "npm run test:neon --prefix smart-village-backend"
+  },
+  "dependencies": {
+    "@turf/boolean-intersects": "^7.4.0",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.0.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.0",
+    "multer": "^2.0.2",
+    "pg": "^8.23.1",
+    "sharp": "^0.35.5",
+    "zod": "^4.1.0"
+  }
+}

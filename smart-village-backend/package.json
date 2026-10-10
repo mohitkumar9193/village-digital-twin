@@ -12,9 +12,12 @@
     "local": "node scripts/run-local.js",
     "test": "node --test --test-concurrency=1 test/api.test.js",
     "test:ai": "node scripts/test-ai.mjs",
-    "bootstrap": "node scripts/bootstrap.js"
+    "bootstrap": "node scripts/bootstrap.js",
+    "test:neon": "node scripts/test-neon.js",
+    "bootstrap:neon": "node scripts/bootstrap-neon.js"
   },
   "dependencies": {
+    "@turf/boolean-intersects": "^7.4.0",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -25,10 +28,12 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.0",
     "multer": "^2.0.2",
+    "pg": "^8.23.1",
     "sharp": "^0.35.5",
     "zod": "^4.1.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "mongodb-memory-server": "^10.2.0",
     "supertest": "^7.1.0"
   }

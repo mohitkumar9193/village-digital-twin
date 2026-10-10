@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from './database.js';
 const { Schema } = mongoose;
 const ref = (model, required = true) => ({ type: Schema.Types.ObjectId, ref: model, required });
 const options = { timestamps: true, strict: 'throw' };

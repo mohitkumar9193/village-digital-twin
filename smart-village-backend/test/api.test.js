@@ -2,7 +2,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { resolve, relative, isAbsolute } from 'node:path';
-import mongoose from 'mongoose';
+import mongoose from '../src/database.js';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
 import sharp from 'sharp';
@@ -30,8 +30,8 @@ async function act(complaint, action, actor, extra = {}, expected = 200) {
 before(async () => {
   // All fixture data is synthetic and confined to an ephemeral test database.
   uploadDir = await mkdtemp(resolve('test-uploads-'));
-  mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 }, binary: { downloadDir: resolve('../../work/mongodb-binaries') } });
-  await connectDatabase(mongo.getUri());
+  if(process.env.PG_TEST!=='true')mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 }, binary: { downloadDir: resolve('../../work/mongodb-binaries') } });
+  await connectDatabase(process.env.PG_TEST==='true'?'postgresql://test':mongo.getUri());
   await Promise.all(Object.values(models).map(m => m.init()));
   village = await Village.create({ name: 'Synthetic Test Village' });
   const foreignVillage = await Village.create({ name: 'Synthetic Foreign Village' });
