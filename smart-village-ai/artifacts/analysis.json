@@ -1,0 +1,91 @@
+{
+  "model_version": "synthetic-rf-v1",
+  "synthetic": true,
+  "target": "Suggested operational priority; not incident probability or future failure prediction",
+  "warning": "Synthetic evaluation only. Validate on independently labelled real complaints before operational use.",
+  "raw_rows": 2420,
+  "clean_rows": 2400,
+  "duplicates_removed": 20,
+  "missing_condition_filled": 32,
+  "train_rows": 1920,
+  "test_rows": 480,
+  "split": "Chronological 80/20; no target, resolution, or status features",
+  "accuracy": 0.9479166666666666,
+  "macro_f1": 0.9431504890304855,
+  "baseline_accuracy": 0.3770833333333333,
+  "class_counts": {
+    "medium": 933,
+    "high": 747,
+    "low": 397,
+    "critical": 323
+  },
+  "category_counts": {
+    "roads": 356,
+    "other": 354,
+    "drainage": 353,
+    "electricity": 349,
+    "sanitation": 339,
+    "street_lights": 331,
+    "water": 318
+  },
+  "confusion_labels": [
+    "critical",
+    "high",
+    "low",
+    "medium"
+  ],
+  "confusion_matrix": [
+    [
+      56,
+      4,
+      2,
+      4
+    ],
+    [
+      1,
+      143,
+      0,
+      7
+    ],
+    [
+      0,
+      1,
+      81,
+      0
+    ],
+    [
+      2,
+      3,
+      1,
+      175
+    ]
+  ],
+  "feature_importance": [
+    {
+      "name": "category",
+      "value": 0.2312
+    },
+    {
+      "name": "asset_condition",
+      "value": 0.583
+    },
+    {
+      "name": "age_hours",
+      "value": 0.1386
+    },
+    {
+      "name": "recent_category_reports",
+      "value": 0.1089
+    }
+  ],
+  "training_ranges": {
+    "age_hours": [
+      0.01,
+      456.87
+    ],
+    "recent_category_reports": [
+      0.0,
+      11.0
+    ]
+  }
+}

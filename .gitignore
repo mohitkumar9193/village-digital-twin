@@ -1,0 +1,12 @@
+node_modules/
+dist/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+*.zip
+*.log
+coverage/
+smart-village-backend/data/
+smart-village-backend/test-uploads-*/

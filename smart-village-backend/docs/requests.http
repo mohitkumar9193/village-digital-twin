@@ -1,0 +1,75 @@
+# Use an HTTP client supporting .http files; replace placeholders locally.
+@base = http://localhost:4000/api/v1
+@citizenToken = REPLACE_CITIZEN_ACCESS_TOKEN
+@adminToken = REPLACE_ADMIN_ACCESS_TOKEN
+@staffToken = REPLACE_STAFF_ACCESS_TOKEN
+@complaintId = REPLACE_COMPLAINT_ID
+@departmentId = REPLACE_DEPARTMENT_ID
+
+### Register citizen (use your own password; sample is not a deployed credential)
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{"name":"Your Name","email":"citizen@example.test","password":"REPLACE_WITH_YOUR_PASSWORD"}
+
+### Log in as an existing account
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{"email":"citizen@example.test","password":"REPLACE_WITH_YOUR_PASSWORD"}
+
+### Submit a complaint; replace sample coordinates with actual village location
+POST {{base}}/complaints
+Authorization: Bearer {{citizenToken}}
+Content-Type: application/json
+
+{"title":"Water supply interruption","description":"Water supply has stopped on this street since yesterday.","category":"water","location":{"type":"Point","coordinates":[77.2,28.6]}}
+
+### Citizen tracking
+GET {{base}}/complaints
+Authorization: Bearer {{citizenToken}}
+
+### Fetch current version before any update
+GET {{base}}/complaints/{{complaintId}}
+Authorization: Bearer {{adminToken}}
+
+### Verify (replace version with current value)
+POST {{base}}/complaints/{{complaintId}}/verify
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{"version":0,"remarks":"Issue verified"}
+
+### Assign (department must support category)
+POST {{base}}/complaints/{{complaintId}}/assign
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{"version":1,"departmentId":"{{departmentId}}"}
+
+### Start work
+POST {{base}}/complaints/{{complaintId}}/start
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{"version":2}
+
+### Upload evidence with your client: multipart field image, no other fields
+# POST {{base}}/complaints/{{complaintId}}/attachments
+# Authorization: Bearer {{staffToken}}
+# Reload complaint afterward to get the incremented version.
+
+### Resolve after successful evidence upload; replace version as needed
+POST {{base}}/complaints/{{complaintId}}/resolve
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{"version":4,"remarks":"Supply restored after repairing the valve"}
+
+### Admin overview
+GET {{base}}/analytics/summary
+Authorization: Bearer {{adminToken}}
+
+### Citizen notifications
+GET {{base}}/notifications?unread=true
+Authorization: Bearer {{citizenToken}}
