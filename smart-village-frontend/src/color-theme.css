@@ -43,3 +43,9 @@
 .dashboard-photo-shell .portal-sidebar-note p,.dashboard-photo-shell .workspace-label{color:#c9ded5}
 .dashboard-photo-shell .portal-footer{color:#fff;text-shadow:0 1px 4px #102f35}
 @media(max-width:700px){.dashboard-photo-shell{background-attachment:scroll}.dashboard-photo-shell .portal-sidebar{background:rgba(12,47,53,.88)}}
+
+/* Cover the full navigation panel with the same village photo on every page. */
+.portal-sidebar,.dashboard-photo-shell .portal-sidebar{background:linear-gradient(180deg,rgba(8,35,31,.52),rgba(8,35,31,.62)),url('/images/village-background-v2.png') 58% center/cover no-repeat;backdrop-filter:none}
+.portal-sidebar .brand,.portal-sidebar .workspace-label,.portal-sidebar .nav-item,.portal-sidebar-footer{color:#fff;text-shadow:0 1px 4px #071e1a}
+.portal-sidebar .nav-item.active,.dashboard-photo-shell .portal-sidebar .nav-item.active{background:rgba(40,105,101,.78);border:1px solid #ffffff35}
+.portal-sidebar .portal-sidebar-note{background:rgba(8,35,31,.58)}
